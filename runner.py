@@ -21,10 +21,22 @@ def run(file: str):
     with open(file, "r") as file:
         content = file.readlines()
         for line in content:
-            line_lst = line.strip().split()
-            if not line_lst[0] in ("AP", "CLIENT", "MOVE") or not line_lst:
-                raise ValueError(f"Invalid line format: {line.strip()}")
+            # line_lst = line.strip().split()
+            # print(line_lst)
+            # if line_lst == []:
+            #     pass
+            # elif not line_lst[0] in ("AP", "CLIENT", "MOVE"):
+            #     raise ValueError(f"Invalid line format: {line.strip()}")
+            process_lines(line)
+
+def process_lines(line):
+    line_lst = line.strip().split()
+    if line_lst == []:
+        pass
+    elif not line_lst[0] in ("AP", "CLIENT", "MOVE"):
+        raise ValueError(f"Invalid line format: {line.strip()}")
+
 
 
 if __name__ == "__main__":
-    run()
+    run("Sampleinput.txt")
