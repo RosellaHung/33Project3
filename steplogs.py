@@ -21,5 +21,5 @@ class specific_logger(steplogger):
         self.add_new_log(event)
 
     def __call__(self, filename):
-        with open(f"{self.entity_name}_log.pkl", "wb") as binary_file:
+        with open(f"{self.entity_name}_log.bin", "wb") as binary_file:
             pickle.dump(self.step_lst, binary_file)
