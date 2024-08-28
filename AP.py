@@ -1,9 +1,8 @@
 import math
 from steplogs import specific_logger
 class APclass:
-    def __init__(self, steplogger, APNAME, x, y, channel, powerlevel, frequency, standard, supports_11k, supports_11v,
+    def __init__(self, APNAME, x, y, channel, powerlevel, frequency, standard, supports_11k, supports_11v,
                 supports_11r, coverage_radius, device_limit, minimal_rssi=None):
-        self.steplogger = steplogger
         self._apname = APNAME
         self.x = x
         self.y = y
@@ -42,3 +41,6 @@ class APclass:
 
     def roam(self):
         pass
+
+    def __call__(self):
+        return self.logger.generate(self._apname)
