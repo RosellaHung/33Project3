@@ -1,29 +1,11 @@
-from collections import namedtuple
 from AP import APclass
-# AP_dict = {"APNAME": "",
-# #             "x": 0,
-# #             "y": 0,
-# #             "channel": 0,
-# #             "powerlevel": 0,
-# #             "frequency": "",
-# #             "standard": "",
-# #             "supports_11k": False,
-# #             "supports_11v": False,
-# #             "supports_11r": False,
-# #             "coverage_radius": 0,
-# #             "device_limit": 0,
-# #             "minimal_rssi": None}
-# # Client_nt = namedtuple("Client",
-# #                        ["CLIENTNAME", "x", "y", "standard", "speed", "supports_11k",
-# #                         "supports_11v", "supports_11r", "minimal_rssi"])
-# # Move_nt = namedtuple("Move", ["CLIENT", "x", "y"])
+from AC import ACclass
+from Client import Clientclass
+from steplogs import steplogger
 all_ap = []
-
-def run(file: str):
-    with open(file, "r") as file:
-        content = file.readlines()
-        for line in content:
-            process_lines(line)
+all_client = []
+tracker = steplogger()
+ac = ACclass(tracker)
 
 def process_lines(line):
     line_lst = line.strip().split()
@@ -32,8 +14,26 @@ def process_lines(line):
     elif not line_lst[0] in ("AP", "CLIENT", "MOVE"):
         raise ValueError(f"Invalid line format: {line.strip()}")
     elif line_lst[0] == "AP":
-        Ap = APclass(*line_lst[1:])
+        Ap = APclass(tracker, ac, *line_lst[1:])
+        ac.new_ap(Ap)
         all_ap.append(Ap)
+    elif line_lst[0] == "CLIENT":
+        Client = Clientclass(tracker, ac, *line_lst[1:])
+        all_client.append(Client)
+    elif line_lst[0] == "MOVE":
+        if not all_client is [] and all_ap is []:
+            pass #do whatever it needs
+
+def run(file: str):
+    if not type(file) is str:
+        raise TypeError(f"File name must be str but given {type(file)}: {file}")
+    with open(file, "r") as file:
+        content = file.readlines()
+        for line in content:
+            process_lines(line)
+
+    for x in tracker.step_lst:
+        print(x) #Right before program ends
 
 
 
@@ -41,3 +41,18 @@ def process_lines(line):
 
 if __name__ == "__main__":
     run("Sampleinput.txt")
+    # rssi = -20
+    # minimal_rssi = -30
+    # check_availablity = False
+    # # if check_availablity and (not rssi == None or (minimal_rssi != None and rssi > minimal_rssi)):
+    # if check_availablity and not rssi is None and (minimal_rssi is None or rssi > minimal_rssi):
+    #     print('yay')
+    # all_ap[0]("ap1")
+    # with open("AP1_log.bin", "rb") as binary_file:
+    #     loaded_list = pickle.load(binary_file)
+    # for x in loaded_list:
+    #     print(x)
+
+
+
+
