@@ -1,52 +1,50 @@
 from steplogs import specific_logger
+from AP import APclass
 import math
 class ACclass:
-    def __init__(self, steplogger):
-        self.steplogger = steplogger
-        self._preferred_channel = [1,6,11]
+    def __init__(self):
+        self._preferred_channel = ["11", "6", "1"]
         self.all_ap = []
-        self._channels_available = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+        self._channels_available = {"1": [], "2": [], "3": [], "4": [], "5": [], "6":[],
+                                    "7":[], "8":[], "9":[], "10":[], "11":[]}
         self.logger = specific_logger("AC")
 
     def new_ap(self, ap):
-        if ap.channel not in self._channels_available:
-            self.resolve_channel_conflict(ap)
         self.all_ap.append(ap)
-        self._channels_available.discard(ap.channel)
-        self.logger.write_new(f"AP {ap.APNAME} ADDED ON CHANNEL {ap.channel}")
+        self.update_channel_availability(ap)
+        self.logger.add_new_log(f"AP {ap._apname} ADDED ON CHANNEL {ap.channel}")
 
     def update_channel_availability(self, ap):
-        # Check if the AP's channel overlaps with any other APs on the same channel
-        for existing_ap in self.all_ap:
-            if existing_ap != ap and existing_ap.channel == ap.channel:
-                if self.do_aps_overlap(ap, existing_ap):
-                    self.resolve_channel_conflict(ap, existing_ap)
-                    return
-
-    def do_aps_overlap(self, ap1, ap2):
-        # Calculate the distance between two APs
-        distance = math.sqrt((ap1.x - ap2.x) ** 2 + (ap1.y - ap2.y) ** 2)
-        # Check if the distance is less than the sum of their coverage radii
-        return distance < (ap1.coverage_radius + ap2.coverage_radius)
-
-    def resolve_channel_conflict(self, ap1, ap2):
-        # Attempt to reassign channels to avoid overlap
-        for channel in self._preferred_channels:
-            if channel != ap1.channel and channel != ap2.channel:
-                ap2.channel = channel
-                self.logger.write_new(
-                    f"AP {ap2.APNAME} CHANGED CHANNEL TO {ap2.channel} DUE TO OVERLAP")
-                self._channels_available.discard(channel)  # Mark the channel as used
+        if self._channels_available[f"{ap.channel}"] == []:
+            self._channels_available[f"{ap.channel}"].append(ap)
+            return
+        for x in self._channels_available[f"{ap.channel}"]:
+            if self.do_aps_overlap(x, ap):
+                self.resolve_channel_conflict(ap)
                 return
 
-        # If no preferred channels are available, use any other available channel
-        for channel in self._channels_available:
-            ap2.channel = channel
-            self.logger.write_new(
-                f"AP {ap2.APNAME} ASSIGNED TO CHANNEL {ap2.channel} DUE TO OVERLAP")
-            self._channels_available.discard(channel)
-            return
+    def do_aps_overlap(self, ap1, ap2):
+        distance = math.sqrt((ap1.x - ap2.x) ** 2 + (ap1.y - ap2.y) ** 2)
+        return distance < (ap1._coverage_radius + ap2._coverage_radius)
 
+    def resolve_channel_conflict(self, ap):
+        for channel in self._preferred_channel:
+            if channel != ap.channel and all(not self.do_aps_overlap(ap, other_ap) for other_ap in
+                                             self._channels_available[channel]):
+                ap.channel = channel
+                self._channels_available[channel].append(ap)
+                self.logger.add_new_log(f"AC REQUIRES {ap._apname} TO CHANGE CHANNEL TO {channel}")
+                return
+
+                # If no preferred channels are available, find the next available non-overlapping channel
+            for channel, ap_list in self._channels_available.items():
+                if channel != ap.channel and all(
+                        not self.do_aps_overlap(ap, other_ap) for other_ap in ap_list):
+                    ap.channel = channel
+                    self._channels_available[channel].append(ap)  # Update the channel list
+                    self.logger.add_new_log(
+                        f"AP {ap._apname} ASSIGNED TO CHANNEL {channel} DUE TO OVERLAP")
+                    return
 
     def connecting_client(self, client):
         if self.all_ap is []:
@@ -59,8 +57,25 @@ class ACclass:
         pass
 
     def __call__(self):
-        return self.logger.generate(self._apname)
+        return self.logger.generate("ac")
 
 
 
-
+# ap1 = APclass("AP1", 10, 10, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
+# ap2 = APclass("AP2", 15, 15, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
+# ap3 = APclass("AP3", 12, 12, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
+# ap4 = APclass("AP4", 15, 15, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
+# ap5 = APclass("AP4", 100, 90, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
+#
+# ac = ACclass()
+# ac.new_ap(ap1)
+# ac.new_ap(ap2)
+# ac.new_ap(ap3)
+# ac.new_ap(ap4)
+# ac.new_ap(ap5)
+#
+# print(ap1.channel)
+# print(ap2.channel)
+# print(ap3.channel)
+# print(ap4.channel)
+# print(ap5.channel)
