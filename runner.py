@@ -1,12 +1,12 @@
 from AP import APclass
 from AC import ACclass
 from Client import Clientclass
-from steplogs import steplogger
-all_ap = dict()
-all_client = dict()
+import pickle
+# from steplogs import steplogger
+all_ap = []
+all_client = []
 all_moves = []
-tracker = steplogger()
-ac = ACclass(tracker)
+ac = ACclass()
 
 def process_lines(line):
     line_lst = line.strip().split()
@@ -15,12 +15,12 @@ def process_lines(line):
     elif not line_lst[0] in ("AP", "CLIENT", "MOVE"):
         raise ValueError(f"Invalid line format: {line.strip()}")
     elif line_lst[0] == "AP":
-        Ap = APclass(tracker, ac, *line_lst[1:])
+        Ap = APclass(ac, *line_lst[1:])
         ac.new_ap(Ap)
-        all_ap[line_lst[1]] = Ap
+        all_ap.append(Ap)
     elif line_lst[0] == "CLIENT":
-        Client = Clientclass(tracker, ac, *line_lst[1:])
-        all_client[line_lst[1]] = Client
+        Client = Clientclass(ac, *line_lst[1:])
+        all_client.append(Client)
     elif line_lst[0] == "MOVE":
         all_moves.append(line_lst[1:])
 
@@ -31,20 +31,34 @@ def simulate(file: str):
     with open(file, "r") as file:
         for line in file:
             process_lines(line)
+        for client in all_client:
+            client.connect_to_ap()
         for action in all_moves:
-            client = all_client[action[1]]
-            client.move(action[2], action[3])
+            for c in all_client:
+                if c == action[0]:
+                    client = c
+            client.move(action[1], action[2])
 
 
-    for x in tracker.step_lst:
-        print(x) #Right before program ends
+    ac() #delete this
+    print(ac.logger)
+    for ap in all_ap: #delete this
+        ap()#delete this
+    for client in all_client:#delete this
+        client()#delete this
+
+    # with open("AC_log.bin","rb") as file:
+    #     x = pickle.load(file)
+    #     for _ in x:
+    #         print(_)
+
 
 
 
 
 
 if __name__ == "__main__":
-    run("Sampleinput.txt")
+    simulate("Sampleinput.txt")
     # rssi = -20
     # minimal_rssi = -30
     # check_availablity = False
