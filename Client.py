@@ -19,6 +19,12 @@ class Clientclass:
     def move(self, x_cor, y_cor):
         self.x = x_cor
         self.y = y_cor
+        best_ap_result = ACclass.evaluate_best_ap(self)
+        if best_ap_result is "Out Of Range":
+            self.disconnect()
+        else:
+            self.roam(best_ap_result)
+
 
     def connect_to_ap(self):
         best_ap = self.ac.evaluate_best_ap(self)
@@ -29,11 +35,15 @@ class Clientclass:
                 self.logger.add_new_log(f"CLIENT CONNECT TO {ap._apname} WITH SIGNAL STRENGTH {result[1]}")
 
     def disconnect(self):
-        pass
+        strength = self.connected_ap.calculate_rssi(self)
+        self.connected_ap.disconnect(self)
+        self.connected_ap = None
+        self.steplogger.add_new_log( f"CLIENT DISCONNECT FROM {self.connected_ap._apname} WITH SIGNAL STRENGTH {abs(strength)}")
+        self.logger.add_new_log(f"CLIENT DISCONNECT FROM {self.connected_ap._apname} WITH SIGNAL STRENGTH {abs(strength)}")
 
 
-    def roam(self):
+    def roam(self, ap):
         pass
 
     def __call__(self):
-        return self.logger.generate(self._apname)
+        return self.logger.generate(self._client_name)

@@ -1,7 +1,7 @@
 import math
 from steplogs import specific_logger, steplogger
 class APclass:
-    def __init__(self, steplogger, ac,  APNAME, x, y, channel, powerlevel, frequency, standard, supports_11k, supports_11v,
+    def __init__(self, steplogger, ac, APNAME, x, y, channel, powerlevel, frequency, standard, supports_11k, supports_11v,
                 supports_11r, coverage_radius, device_limit, minimal_rssi=None):
         self.steplogger = steplogger
         self._apname = APNAME
@@ -37,16 +37,16 @@ class APclass:
             self.steplogger.add_new_log(f"{client._client_name} CONNECT LOCATION {client.x} {client.y} {client._standard} {client._frequency} {client._supports11k} {client._supports11v} {client._supports11r}")  # Yet to change
             self.logger.add_new_log(f"{client._client_name} CONNECT LOCATION {client.x} {client.y} {client._standard} {client._frequency} {client._supports11k} {client._supports11v} {client._supports11r}") # Yet to change
             return True, rssi
-        # else:
-        #     self.steplogger.add_new_log(f"{client._client_name} TRIED {self._apname} BUT WAS DENIED")
-        #     self.logger.add_new_log(f"{client._client_name} TRIED {self._apname} BUT WAS DENIED")
         return False
 
-    def disconnect(self): # when client is out of range
-        pass
+    def disconnect(self, client): # when client is out of range
+        self.connecting_clients = [c for c in self.connecting_clients if not client]
+        self.steplogger.add_new_log(f"{client._client_name} DISCONNECT AT LOCATION {client.x} {client.y}")
+        self.logger.add_new_log(f"{client._client_name} DISCONNECT AT LOCATION {client.x} {client.y}")
 
     def roam(self):
         pass
+
 
     def __call__(self, filename):
         return self.logger.generate(filename)
