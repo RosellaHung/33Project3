@@ -2,8 +2,9 @@ from AP import APclass
 from AC import ACclass
 from Client import Clientclass
 from steplogs import steplogger
-all_ap = []
-all_client = []
+all_ap = dict()
+all_client = dict()
+all_moves = []
 tracker = steplogger()
 ac = ACclass(tracker)
 
@@ -16,21 +17,24 @@ def process_lines(line):
     elif line_lst[0] == "AP":
         Ap = APclass(tracker, ac, *line_lst[1:])
         ac.new_ap(Ap)
-        all_ap.append(Ap)
+        all_ap[line_lst[1]] = Ap
     elif line_lst[0] == "CLIENT":
         Client = Clientclass(tracker, ac, *line_lst[1:])
-        all_client.append(Client)
+        all_client[line_lst[1]] = Client
     elif line_lst[0] == "MOVE":
-        if not all_client is [] and all_ap is []:
-            pass #do whatever it needs
+        all_moves.append(line_lst[1:])
 
-def run(file: str):
+
+def simulate(file: str):
     if not type(file) is str:
         raise TypeError(f"File name must be str but given {type(file)}: {file}")
     with open(file, "r") as file:
-        content = file.readlines()
-        for line in content:
+        for line in file:
             process_lines(line)
+        for action in all_moves:
+            client = all_client[action[1]]
+            client.move(action[2], action[3])
+
 
     for x in tracker.step_lst:
         print(x) #Right before program ends
@@ -52,6 +56,7 @@ if __name__ == "__main__":
     #     loaded_list = pickle.load(binary_file)
     # for x in loaded_list:
     #     print(x)
+
 
 
 
