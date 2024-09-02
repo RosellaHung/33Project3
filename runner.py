@@ -3,8 +3,8 @@ from AC import ACclass
 from Client import Clientclass
 import pickle
 # from steplogs import steplogger
-all_ap = []
-all_client = []
+all_ap = dict()
+all_client = dict()
 all_moves = []
 ac = ACclass()
 
@@ -17,10 +17,10 @@ def process_lines(line):
     elif line_lst[0] == "AP":
         Ap = APclass(ac, *line_lst[1:])
         ac.new_ap(Ap)
-        all_ap.append(Ap)
+        all_ap[line_lst[1]] = Ap
     elif line_lst[0] == "CLIENT":
         Client = Clientclass(ac, *line_lst[1:])
-        all_client.append(Client)
+        all_client[line_lst[1]]= Client
     elif line_lst[0] == "MOVE":
         all_moves.append(line_lst[1:])
 
@@ -31,27 +31,19 @@ def simulate(file: str):
     with open(file, "r") as file:
         for line in file:
             process_lines(line)
-        for client in all_client:
-            client.connect_to_ap()
+        for client_name, client_obj in all_client.items():
+            client_obj.connect_to_ap()
         for action in all_moves:
-            for c in all_client:
-                if c == action[0]:
-                    client = c
-            client.move(action[1], action[2])
+            client_obj = all_client[action[0]]
+            client_obj.move(action[1], action[2])
 
 
-    ac() #delete this
+    ac()
     print(ac.logger)
-    for ap in all_ap: #delete this
-        ap()#delete this
-    for client in all_client:#delete this
-        client()#delete this
-
-    # with open("AC_log.bin","rb") as file:
-    #     x = pickle.load(file)
-    #     for _ in x:
-    #         print(_)
-
+    for ap in all_ap.values():
+        ap()
+    for client in all_client.values():
+        client()
 
 
 

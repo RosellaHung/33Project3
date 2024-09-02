@@ -1,10 +1,10 @@
-from steplogs import specific_logger, steplogger
+from steplogs import specific_logger
 from collections import namedtuple
 from AP import APclass
 import math
+
 class ACclass:
-    def __init__(self, steplogger):
-        self.steplogger = steplogger
+    def __init__(self):
         self._preferred_channel = ["11", "6", "1"]
         self.all_ap = []
         self._channels_available = {"1": [], "2": [], "3": [], "4": [], "5": [], "6":[],
@@ -18,13 +18,15 @@ class ACclass:
     def update_channel_availability(self, ap):
         original = int(ap.channel)
         if self._channels_available[f"{ap.channel}"] == []:
+            self.logger.add_new_log(f"AC ASSIGNED {ap._apname} TO CHANNEL {ap.channel}")
             self._channels_available[f"{ap.channel}"].append(ap)
             return
         for x in self._channels_available[f"{ap.channel}"]:
             if self.do_aps_overlap(x, ap):
                 self.resolve_channel_conflict(ap)
-        if ap.channel == original:
+        if int(ap.channel) == original:
             self._channels_available[f"{ap.channel}"].append(ap)
+            self.logger.add_new_log(f"AC ASSIGNED {ap._apname} TO CHANNEL {ap.channel}")
 
     def do_aps_overlap(self, ap1, ap2) -> bool:
         distance = math.sqrt((int(ap1.x) - int(ap2.x)) ** 2 + (int(ap1.y) - int(ap2.y)) ** 2)
@@ -35,63 +37,98 @@ class ACclass:
             if channel != ap.channel and all(not self.do_aps_overlap(ap, other_ap) for other_ap in self._channels_available[channel]):
                 ap.channel = channel
                 self._channels_available[channel].append(ap)
-                self.steplogger.add_new_log(f"AC REQUIRES {ap._apname} TO CHANGE CHANNEL TO {channel}")
                 self.logger.add_new_log(f"AC REQUIRES {ap._apname} TO CHANGE CHANNEL TO {channel}")
                 return
         for channel, ap_list in self._channels_available.items():
             if channel != ap.channel and all(not self.do_aps_overlap(ap, other_ap) for other_ap in ap_list):
                 ap.channel = channel
                 self._channels_available[channel].append(ap)  # Update the channel list
-                self.steplogger.add_new_log(f"AC REQUIRES {ap._apname} TO CHANGE CHANNEL TO {channel}")
                 self.logger.add_new_log(f"AC REQUIRES {ap._apname} TO CHANGE CHANNEL TO {channel}")
                 return
 
     def evaluate_best_ap(self, client):
-        compatible_ap_score = {}
-        highest_score_ap =[]
-        high_score = 0
+        compatible_ap_scores = dict()
         client_wifi_standard = client._standard[4]
+        client_support_standard = (client._supports11k, client._supports11v, client._supports11r)
         if self.all_ap is []:
-            return
+            return "Out Of Range"
         for point in self.all_ap:
             calculated_rssi = point.calculate_rssi(client)
-            if calculated_rssi is not None and calculated_rssi >= client.minimal_rssi and (point.minimal_rssi is None or calculated_rssi >= point.minimal_rssi):
-                compatible_ap_score[point] = 1
-        # Prefer APs with higher or more compatible WiFi standards. For this one,
-        # they prefer in such order, device with WIFI 6 always prefer AP with WIFI 6 or higher.
-        # In tie, device prefer APs with more supported roaming standard.
-        # For example if two AP both support WIFI6, but the one AP support close number of roaming standard with the device, the device would choose that one.
-        # More detailed example is that client one support 802.11r and 802.11v, one AP support all three standards and the other AP support only 802.11r and 802.11v, the client will prefer the one support only 802.11r and 802.11v.
-        #......
-        # If there is a tie, prefer AP with more power.
-        for point, score in compatible_ap_score.item():
-            if point._standard[4] >= client_wifi_standard:
-                compatible_ap_score[point] = score + 1
-        for point, score in compatible_ap_score.items():
+            if calculated_rssi is not None and abs(calculated_rssi) >= client._minimal_rssi and (point._minimal_rssi is None or abs(calculated_rssi) >= float(point._minimal_rssi)):
+                compatible_ap_scores[point] = 1
+        if not compatible_ap_scores:
+            return "Out Of Range"
+        for point in compatible_ap_scores.keys():
+            if int(point._standard[4:]) > int(client_wifi_standard):
+                compatible_ap_scores[point] += 2
+            elif int(point._standard[4:]) == int(client_wifi_standard):
+                compatible_ap_scores[point] += 1
+        highest_score_ap, is_tie = self.find_if_tie(compatible_ap_scores) # highest_score_ap, len(highest_score_ap) > 1
+        if is_tie is True:
+            for ap in highest_score_ap:
+                if (ap._supports11k, ap._supports11v, ap._supports11r) == (client_support_standard):
+                    compatible_ap_scores[ap] += 1
+        highest_score_ap, is_tie = self.find_if_tie(compatible_ap_scores)
+        if is_tie is True:
+            power = []
+            for point in compatible_ap_scores.keys():
+                if point._powerlevel > power:
+                    power = [(point._powerlevel, point)]
+                elif point._powerlevel == power:
+                    power.append((point._powerlevel, point))
+            for power_lev, point in power:
+                compatible_ap_scores[point] += 1
+        for ap in compatible_ap_scores:
+            if len(ap.connecting_clients) >= ap._device_limit:
+                del compatible_ap_scores[ap]
+        if not compatible_ap_scores:
+            return
+        for ap in compatible_ap_scores:
+            if '6' in ap._frequency:
+                compatible_ap_scores[ap] += 2
+            elif '5' in ap._frequency and not '6' in ap._frequency:
+                compatible_ap_scores[ap] += 1
+        for ap in compatible_ap_scores:
+            if ap.channel == '11':
+                compatible_ap_scores[ap] += 3
+            elif ap.channel == '6':
+                compatible_ap_scores[ap] += 2
+            elif ap.channel == '1':
+                compatible_ap_scores[ap] += 1
+        for ap in compatible_ap_scores:
+            if ap._supports_11r == "true":
+                compatible_ap_scores[ap] += 1
+        most_compatible_ap, is_tie = self.find_if_tie(compatible_ap_scores)
+        least_loaded_ap = None
+        if is_tie:
+            tracker = 1.0
+            for ap in most_compatible_ap:
+                load = len(ap.connecting_clients) / ap._device_limit
+                if load < tracker:
+                    tracker = load
+                    least_loaded_ap = ap
+        else:
+            least_loaded_ap = most_compatible_ap[0]
+        return least_loaded_ap
+
+
+
+
+    def find_if_tie(self, ap_dict):
+        most_compatible_ap = []
+        high_score = 0
+        for point, score in ap_dict.items():
             if score > high_score:
                 high_score = score
-                highest_score_ap = []
-                highest_score_ap.append(point)
+                most_compatible_ap = []
+                most_compatible_ap.append(point)
             elif score == high_score:
-                highest_score_ap.append(point)
-        # If tie then comapare roaming standard
-        if high_score == 1:
-            pass #did not find ap with same or higher wifi standard
-        if len(highest_score_ap) > 1:
-            pass
-
-
-
-
-
-    def disconnecting_client(self, client):
-        #if out of range
-        pass
+                ap_dict.append(point)
+            return most_compatible_ap, len(most_compatible_ap) > 1
 
 
     def __call__(self):
         return self.logger.generate("ac")
-
 
 
 # ap1 = APclass("AP1", 10, 10, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
