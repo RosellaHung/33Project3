@@ -54,7 +54,15 @@ class APclass:
 
     def roam_client(self, client):
         new_ap_for_client = self.ac.evaluate_best_ap(client)
+        if new_ap_for_client == "Out Of Range":
+            self.disconnect(client)
+            return
+        if new_ap_for_client is None:
+            self.logger.add_new_log(f"NO AVAILABLE AP FOR {client._client_name} TO ROAM TO")
+            self.ac.logger.add_new_log(f"NO AVAILABLE AP FOR {client._client_name} TO ROAM TO")
+            return
         client.connected_ap = new_ap_for_client
+        self.connecting_clients = [c for c in self.connecting_clients if not new_ap_for_client]
         if new_ap_for_client._supports_11r is "true":
             self.logger.add_new_log(f"{client._client_name} FAST ROAM TO {new_ap_for_client._apname}")
             self.ac.logger.add_new_log(f"{client._client_name} FAST ROAM TO {new_ap_for_client._apname}")
