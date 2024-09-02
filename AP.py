@@ -32,7 +32,7 @@ class APclass:
         distance = math.sqrt((self.x - int(client.x)) ** 2 + (self.y - int(client.y)) ** 2)
         if distance > self._coverage_radius:
             return None
-        return self._powerlevel - 20 * math.log10(distance) - 20 * math.log10(result) - 32.44
+        return abs(self._powerlevel - 20 * math.log10(distance) - 20 * math.log10(result) - 32.44)
 
     def check_availablity(self):
         return len(self.connecting_clients)  < self._device_limit
@@ -52,8 +52,15 @@ class APclass:
         self.logger.add_new_log(f"{client._client_name} DISCONNECT AT LOCATION {client.x} {client.y}")
         self.ac.logger.add_new_log(f"{client._client_name} DISCONNECT AT LOCATION {client.x} {client.y}")
 
-    def roam(self):
-        pass
+    def roam_client(self, client):
+        new_ap_for_client = self.ac.evaluate_best_ap(client)
+        client.connected_ap = new_ap_for_client
+        if new_ap_for_client._supports_11r is "true":
+            self.logger.add_new_log(f"{client._client_name} FAST ROAM TO {new_ap_for_client._apname}")
+            self.ac.logger.add_new_log(f"{client._client_name} FAST ROAM TO {new_ap_for_client._apname}")
+        else:
+            self.logger.add_new_log(f"{client._client_name} ROAM TO {new_ap_for_client._apname}")
+            self.ac.logger.add_new_log(f"{client._client_name} ROAM TO {new_ap_for_client._apname}")
 
 
     def __call__(self):
