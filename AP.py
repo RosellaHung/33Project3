@@ -44,8 +44,8 @@ class APclass:
         if self.check_availablity() and not rssi is None and (self._minimal_rssi is None or rssi > float(self._minimal_rssi)):
             self.connecting_clients.append(client)
             client.connected_ap = self
-            self.logger.add_new_log(f"{client._client_name} CONNECT LOCATION {client.x} {client.y} {client._standard} {"/".join(client._frequency)} {client._supports11k} {client._supports11v} {client._supports11r}") # Yet to change
-            self.ac.logger.add_new_log(f"{client._client_name} CONNECT LOCATION {client.x} {client.y} {client._standard} {"/".join(client._frequency)} {client._supports11k} {client._supports11v} {client._supports11r}")  # Yet to change
+            self.logger.add_new_log(f"{client._client_name} CONNECT LOCATION {client.x} {client.y} {client._standard} {"/".join(client._frequency)} {client._supports11k} {client._supports11v} {client._supports11r}")
+            self.ac.logger.add_new_log(f"{client._client_name} CONNECT LOCATION {client.x} {client.y} {client._standard} {"/".join(client._frequency)} {client._supports11k} {client._supports11v} {client._supports11r}")
             return True, rssi
         return False, rssi
 
@@ -71,6 +71,23 @@ class APclass:
         else:
             self.logger.add_new_log(f"{client._client_name} ROAM TO {new_ap_for_client._apname}")
             self.ac.logger.add_new_log(f"{client._client_name} ROAM TO {new_ap_for_client._apname}")
+
+    def __str__(self):
+        string_format = (f"This is {self._apname} at the Location {self.x} {self.y} in channel {self.channel}"
+                         f"Power Level: {self._powerlevel}"
+                         f"Frequency: {'/'.join(self._frequency)}"
+                         f"Standard: {self._standard}"
+                         f"Supports 11k: {self._supports_11k}"
+                         f"Supports 11v: {self._supports_11v}"
+                         f"Supports 11r: {self._supports_11r}"
+                         f"Coverage Radius: {self._coverage_radius}"
+                         f"Device Limit: {self._device_limit}"
+                         f"Minimum rssi: {self._minimal_rssi}"
+                         f"Connecting Clients:")
+        for client in self.connecting_clients:
+            string_format += f"{client._client_name}\n"
+        return string_format
+
 
 
     def __call__(self):

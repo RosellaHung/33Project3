@@ -1,8 +1,6 @@
 from AP import APclass
 from AC import ACclass
 from Client import Clientclass
-import pickle
-# from steplogs import steplogger
 all_ap = dict()
 all_client = dict()
 all_moves = []
@@ -36,14 +34,12 @@ def simulate(file: str):
         for action in all_moves:
             client_obj = all_client[action[0]]
             client_obj.move(action[1], action[2])
-
-
-    ac()
+    # ac()
     print(ac.logger)
-    for ap in all_ap.values():
-        ap()
-    for client in all_client.values():
-        client()
+    # for ap in all_ap.values():
+    #     ap()
+    # for client in all_client.values():
+    #     client()
 
 
 
@@ -51,13 +47,6 @@ def simulate(file: str):
 
 if __name__ == "__main__":
     simulate("Sampleinput.txt")
-    # rssi = -20
-    # minimal_rssi = -30
-    # check_availablity = False
-    # # if check_availablity and (not rssi == None or (minimal_rssi != None and rssi > minimal_rssi)):
-    # if check_availablity and not rssi is None and (minimal_rssi is None or rssi > minimal_rssi):
-    #     print('yay')
-    # all_ap[0]("ap1")
     # with open("AP1_log.bin", "rb") as binary_file:
     #     loaded_list = pickle.load(binary_file)
     # for x in loaded_list:

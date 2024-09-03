@@ -16,6 +16,7 @@ class Clientclass:
         self._supports11v = supports_11v
         self._supports11r = supports_11r
         self._minimal_rssi = float(minimal_rssi)
+        self.current_rssi = None
         self.logger = specific_logger(client_name)
         self.connected_ap = None
 
@@ -43,18 +44,17 @@ class Clientclass:
             self.ac.logger.add_new_log(f"{self._client_name} FOUND NO AP TO CONNECT")
             return
         result = best_ap.connect(self.client)
+        self.current_rssi = result[1]
         if result[0] is True:
             self.connected_ap = best_ap
             self.logger.add_new_log(f"CLIENT CONNECT TO {best_ap._apname} WITH SIGNAL STRENGTH {result[1]:.2f}")
             self.ac.logger.add_new_log(f"{self._client_name} CONNECT TO {best_ap._apname} WITH SIGNAL STRENGTH {result[1]:.2f}")
 
     def disconnect(self):
-        strength = self.connected_ap.calculate_rssi(self)
         self.connected_ap.disconnect(self)
+        self.logger.add_new_log(f"CLIENT DISCONNECT FROM {self.connected_ap._apname} WITH SIGNAL STRENGTH {self.current_rssi:.2f}")
+        self.ac.logger.add_new_log(f"{self._client_name} DISCONNECT FROM {self.connected_ap._apname} WITH SIGNAL STRENGTH {self.current_rssi:.2f}")
         self.connected_ap = None
-        self.logger.add_new_log(f"CLIENT DISCONNECT FROM {self.connected_ap._apname} WITH SIGNAL STRENGTH {strength:.2f}")
-        self.ac.logger.add_new_log(f"{self._client_name} DISCONNECT FROM {self.connected_ap._apname} WITH SIGNAL STRENGTH {strength:.2f}")
-
 
     def roam(self, ap):
         if ap is None:
