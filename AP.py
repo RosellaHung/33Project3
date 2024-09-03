@@ -49,7 +49,7 @@ class APclass:
             return True, rssi
         return False, rssi
 
-    def disconnect(self, client): # when client is out of range
+    def disconnect(self, client):
         self.connecting_clients = [c for c in self.connecting_clients if not client]
         self.logger.add_new_log(f"{client._client_name} DISCONNECT AT LOCATION {client.x} {client.y}")
         self.ac.logger.add_new_log(f"{client._client_name} DISCONNECT AT LOCATION {client.x} {client.y}")
