@@ -88,7 +88,5 @@ class APclass:
             string_format += f"{client._client_name}\n"
         return string_format
 
-
-
     def __call__(self):
         return self.logger.generate(self._apname)

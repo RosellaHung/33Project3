@@ -63,7 +63,6 @@ class Clientclass:
             self.logger.add_new_log(f"CLIENT ROAM FROM {self.connected_ap} TO {ap._apname}")
             self.ac.logger.add_new_log(f"{self._client_name} ROAM FROM {self.connected_ap._apname} TO {ap._apname}")
             self.connected_ap = ap
-
     def __str__(self):
         string_format = (f"\nThis is {self._client_name} at the Location {self.x} {self.y}\n"
                          f"Frequency: {'/'.join(self._frequency)}\n"

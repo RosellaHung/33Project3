@@ -126,18 +126,18 @@ class ACclass:
         return most_compatible_ap, len(most_compatible_ap) > 1
 
     def __str__(self):
-        string_form = (f"AP in channel:"
-                       f"1 : {self._channels_available["1"]}"
-                       f"2 : {self._channels_available["2"]}"
-                       f"3 : {self._channels_available["3"]}"
-                       f"4 : {self._channels_available["4"]}"
-                       f"5 : {self._channels_available["5"]}"
-                       f"6 : {self._channels_available["6"]}"
-                       f"7 : {self._channels_available["7"]}"
-                       f"8 : {self._channels_available["8"]}"
-                       f"9 : {self._channels_available["9"]}"
-                       f"10 : {self._channels_available["10"]}"
-                       f"11 : {self._channels_available["11"]}")
+        string_form = (f"\nAP in channel:\n"
+                       f"1 : {self._channels_available["1"]}\n"
+                       f"2 : {self._channels_available["2"]}\n"
+                       f"3 : {self._channels_available["3"]}\n"
+                       f"4 : {self._channels_available["4"]}\n"
+                       f"5 : {self._channels_available["5"]}\n"
+                       f"6 : {self._channels_available["6"]}\n"
+                       f"7 : {self._channels_available["7"]}\n"
+                       f"8 : {self._channels_available["8"]}\n"
+                       f"9 : {self._channels_available["9"]}\n"
+                       f"10 : {self._channels_available["10"]}\n"
+                       f"11 : {self._channels_available["11"]}\n")
 
     def __call__(self):
         return self.logger.generate("ac")

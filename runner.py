@@ -35,19 +35,9 @@ def simulate(file: str):
             client_obj = all_client[action[0]]
             client_obj.move(action[1], action[2])
     print(ac.logger)
-    for x,y in all_ap.items():
-        print(y)
-
-
-
-
 
 if __name__ == "__main__":
     simulate("Sampleinput.txt")
-    # with open("AP1_log.bin", "rb") as binary_file:
-    #     loaded_list = pickle.load(binary_file)
-    # for x in loaded_list:
-    #     print(x)
 
 
 
