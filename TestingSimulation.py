@@ -2,7 +2,6 @@ import unittest
 from AC import ACclass
 from AP import APclass
 from Client import Clientclass
-from steplogs import specific_logger
 class TestSimulationProgram(unittest.TestCase):
     def setUp(self):
         self.ac = ACclass()
@@ -21,10 +20,6 @@ class TestSimulationProgram(unittest.TestCase):
 
 
     def test_assign_channel_wo_conflicts(self):
-        # ap1 = APclass(f"{self.ac}", "AP1", "0", "20", "11", "20", "2.4/5", "WiFi7", "true", "true", "true", "15", "10")
-        # ap2 = APclass(f"{self.ac}", "AP2", "25", "41", "2", "30", "6", "WiFi6", "false", "true","true", "15", "20", "80")
-        # ap3 = APclass(f"{self.ac}", "AP3", "200", "60", "6", "21", "2.4/5", "WiFi6", "true", "true", "false", "50", "32", "75")
-        # ap4 = APclass(f"{self.ac}", "AP4", "110", "10", "6", "20", "2.4/5", "WiFi8", "true", "true", "true", "10", "10")
         self.assertEqual(self.ap1.channel, "11")
         self.assertEqual(self.ap2.channel, "2")
         self.assertEqual(self.ap3.channel, "6")

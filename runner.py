@@ -34,12 +34,9 @@ def simulate(file: str):
         for action in all_moves:
             client_obj = all_client[action[0]]
             client_obj.move(action[1], action[2])
-    # ac()
     print(ac.logger)
-    # for ap in all_ap.values():
-    #     ap()
-    # for client in all_client.values():
-    #     client()
+    for x,y in all_ap.items():
+        print(y)
 
 
 

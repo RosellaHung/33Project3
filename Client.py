@@ -1,5 +1,4 @@
 from steplogs import specific_logger
-from AC import ACclass
 class Clientclass:
     def __init__(self, ac, client_name, x, y, standard, frequency, supports_11k, supports_11v, supports_11r, minimal_rssi):
         self.ac = ac
@@ -64,6 +63,18 @@ class Clientclass:
             self.logger.add_new_log(f"CLIENT ROAM FROM {self.connected_ap} TO {ap._apname}")
             self.ac.logger.add_new_log(f"{self._client_name} ROAM FROM {self.connected_ap._apname} TO {ap._apname}")
             self.connected_ap = ap
+
+    def __str__(self):
+        string_format = (f"\nThis is {self._client_name} at the Location {self.x} {self.y}\n"
+                         f"Frequency: {'/'.join(self._frequency)}\n"
+                         f"Standard: {self._standard}\n"
+                         f"Supports 11k: {self._supports11k}\n"
+                         f"Supports 11v: {self._supports11v}\n"
+                         f"Supports 11r: {self._supports11r}\n"
+                         f"Minimum rssi: {self._minimal_rssi}\n"
+                         f"Connected AP: {self.connected_ap}\n"
+                         f"Current rssi: {self.current_rssi}\n")
+        return string_format
 
     def __call__(self):
         return self.logger.generate(self._client_name)

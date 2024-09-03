@@ -1,6 +1,4 @@
 from steplogs import specific_logger
-from collections import namedtuple
-from AP import APclass
 import math
 
 class ACclass:
@@ -17,7 +15,6 @@ class ACclass:
 
     def update_channel_availability(self, ap):
         original = int(ap.channel)
-        result = None
         if self._channels_available[f"{ap.channel}"] == []:
             self.logger.add_new_log(f"AC ASSIGNED {ap._apname} TO CHANNEL {ap.channel}")
             self._channels_available[f"{ap.channel}"].append(ap)
@@ -27,6 +24,7 @@ class ACclass:
                 result = self.resolve_channel_conflict(ap)
                 if not result:
                     self.logger.add_new_log(f"NO CHANNEL AVAILABLE FOR {ap._apname} TO ASSIGN")
+                    self.all_ap.remove(ap)
                 return
         if int(ap.channel) == original:
             self._channels_available[f"{ap.channel}"].append(ap)
@@ -67,7 +65,7 @@ class ACclass:
                 compatible_ap_scores[point] += 2
             elif int(point._standard[4:]) == int(client_wifi_standard):
                 compatible_ap_scores[point] += 1
-        highest_score_ap, is_tie = self.find_if_tie(compatible_ap_scores) # highest_score_ap, len(highest_score_ap) > 1
+        highest_score_ap, is_tie = self.find_if_tie(compatible_ap_scores)
         if is_tie is True:
             for ap in highest_score_ap:
                 if (ap._supports_11k, ap._supports_11v, ap._supports_11r) == (client_support_standard):
@@ -115,9 +113,6 @@ class ACclass:
             least_loaded_ap = most_compatible_ap[0]
         return least_loaded_ap
 
-
-
-
     def find_if_tie(self, ap_dict):
         most_compatible_ap = []
         high_score = 0
@@ -129,5 +124,20 @@ class ACclass:
             elif score == high_score:
                 most_compatible_ap.append(point)
         return most_compatible_ap, len(most_compatible_ap) > 1
+
+    def __str__(self):
+        string_form = (f"AP in channel:"
+                       f"1 : {self._channels_available["1"]}"
+                       f"2 : {self._channels_available["2"]}"
+                       f"3 : {self._channels_available["3"]}"
+                       f"4 : {self._channels_available["4"]}"
+                       f"5 : {self._channels_available["5"]}"
+                       f"6 : {self._channels_available["6"]}"
+                       f"7 : {self._channels_available["7"]}"
+                       f"8 : {self._channels_available["8"]}"
+                       f"9 : {self._channels_available["9"]}"
+                       f"10 : {self._channels_available["10"]}"
+                       f"11 : {self._channels_available["11"]}")
+
     def __call__(self):
         return self.logger.generate("ac")

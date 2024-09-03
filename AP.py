@@ -73,17 +73,17 @@ class APclass:
             self.ac.logger.add_new_log(f"{client._client_name} ROAM TO {new_ap_for_client._apname}")
 
     def __str__(self):
-        string_format = (f"This is {self._apname} at the Location {self.x} {self.y} in channel {self.channel}"
-                         f"Power Level: {self._powerlevel}"
-                         f"Frequency: {'/'.join(self._frequency)}"
-                         f"Standard: {self._standard}"
-                         f"Supports 11k: {self._supports_11k}"
-                         f"Supports 11v: {self._supports_11v}"
-                         f"Supports 11r: {self._supports_11r}"
-                         f"Coverage Radius: {self._coverage_radius}"
-                         f"Device Limit: {self._device_limit}"
-                         f"Minimum rssi: {self._minimal_rssi}"
-                         f"Connecting Clients:")
+        string_format = (f"\nThis is {self._apname} at the Location {self.x} {self.y} in channel {self.channel}\n"
+                         f"Power Level: {self._powerlevel}\n"
+                         f"Frequency: {'/'.join(self._frequency)}\n"
+                         f"Standard: {self._standard}\n"
+                         f"Supports 11k: {self._supports_11k}\n"
+                         f"Supports 11v: {self._supports_11v}\n"
+                         f"Supports 11r: {self._supports_11r}\n"
+                         f"Coverage Radius: {self._coverage_radius}\n"
+                         f"Device Limit: {self._device_limit}\n"
+                         f"Minimum rssi: {self._minimal_rssi}\n"
+                         f"Connecting Clients:\n")
         for client in self.connecting_clients:
             string_format += f"{client._client_name}\n"
         return string_format
