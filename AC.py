@@ -70,13 +70,13 @@ class ACclass:
         highest_score_ap, is_tie = self.find_if_tie(compatible_ap_scores) # highest_score_ap, len(highest_score_ap) > 1
         if is_tie is True:
             for ap in highest_score_ap:
-                if (ap._supports11k, ap._supports11v, ap._supports11r) == (client_support_standard):
+                if (ap._supports_11k, ap._supports_11v, ap._supports_11r) == (client_support_standard):
                     compatible_ap_scores[ap] += 1
         highest_score_ap, is_tie = self.find_if_tie(compatible_ap_scores)
         if is_tie is True:
-            power = []
+            power = [(0, None)]
             for point in compatible_ap_scores.keys():
-                if point._powerlevel > power:
+                if point._powerlevel > power[0][0]:
                     power = [(point._powerlevel, point)]
                 elif point._powerlevel == power:
                     power.append((point._powerlevel, point))
@@ -127,7 +127,7 @@ class ACclass:
                 most_compatible_ap = []
                 most_compatible_ap.append(point)
             elif score == high_score:
-                ap_dict.append(point)
-            return most_compatible_ap, len(most_compatible_ap) > 1
+                most_compatible_ap.append(point)
+        return most_compatible_ap, len(most_compatible_ap) > 1
     def __call__(self):
         return self.logger.generate("ac")
