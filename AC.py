@@ -17,13 +17,17 @@ class ACclass:
 
     def update_channel_availability(self, ap):
         original = int(ap.channel)
+        result = None
         if self._channels_available[f"{ap.channel}"] == []:
             self.logger.add_new_log(f"AC ASSIGNED {ap._apname} TO CHANNEL {ap.channel}")
             self._channels_available[f"{ap.channel}"].append(ap)
             return
         for x in self._channels_available[f"{ap.channel}"]:
             if self.do_aps_overlap(x, ap):
-                self.resolve_channel_conflict(ap)
+                result = self.resolve_channel_conflict(ap)
+                if not result:
+                    self.logger.add_new_log(f"NO CHANNEL AVAILABLE FOR {ap._apname} TO ASSIGN")
+                return
         if int(ap.channel) == original:
             self._channels_available[f"{ap.channel}"].append(ap)
             self.logger.add_new_log(f"AC ASSIGNED {ap._apname} TO CHANNEL {ap.channel}")
@@ -125,27 +129,5 @@ class ACclass:
             elif score == high_score:
                 ap_dict.append(point)
             return most_compatible_ap, len(most_compatible_ap) > 1
-
-
     def __call__(self):
         return self.logger.generate("ac")
-
-
-# ap1 = APclass("AP1", 10, 10, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
-# ap2 = APclass("AP2", 15, 15, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
-# ap3 = APclass("AP3", 200, 60, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
-# ap4 = APclass("AP4", 15, 15, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
-# ap5 = APclass("AP4", 210, 90, 6, 20, 2.4/5, "WiFi6", "true", "true", "true", 50, 10, 75)
-#
-# ac = ACclass()
-# ac.new_ap(ap1)
-# ac.new_ap(ap2)
-# ac.new_ap(ap3)
-# ac.new_ap(ap4)
-# ac.new_ap(ap5)
-#
-# print(ap1.channel)
-# print(ap2.channel)
-# print(ap3.channel)
-# print(ap4.channel)
-# print(ap5.channel)
